@@ -1,11 +1,11 @@
 name: Manual Sync from GitLab
 on:
-  workflow_dispatch:
+  workflow_dispatch:  # 仅手动触发
 
-# 关键修复点：添加权限声明
+# 权限必须声明在顶层（与 `name` 和 `on` 同级）
 permissions:
-  contents: write
-  workflows: write
+  contents: write    # 允许修改代码
+  actions: write   # 允许修改工作流文件
 
 jobs:
   sync-master:
@@ -15,7 +15,7 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: master
-          fetch-depth: 0
+          fetch-depth: 0  # 必须获取完整历史记录
 
       - name: 添加并拉取 GitLab 仓库
         run: |
