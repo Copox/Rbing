@@ -1,11 +1,10 @@
-name: Manual Sync from GitLab
+name: Manual Sync from GitLab (Exclude Canary)
 on:
   workflow_dispatch:  # 仅手动触发
 
-# 关键修复点：使用正确的权限名称
 permissions:
   contents: write    # 允许修改代码
-  actions: write     # 允许修改工作流文件（原 workflows: write 是无效的）
+  actions: write     # 允许修改工作流文件（即使要删除也需要此权限）
 
 jobs:
   sync-master:
@@ -22,9 +21,17 @@ jobs:
           git remote add gitlab https://git.ryujinx.app/ryubing/ryujinx.git
           git fetch gitlab master
 
-      - name: 合并并推送更新
+      - name: 合并 GitLab 更新
         run: |
           git config --global user.name "GitHub Actions Sync Bot"
           git config --global user.email "actions@github.com"
           git merge --no-edit gitlab/master --allow-unrelated-histories
-          git push origin master
+
+      - name: 删除 Canary 工作流文件（关键步骤）
+        run: |
+          # 删除文件并提交
+          git rm --force .github/workflows/canary.yml
+          git commit -m "chore: exclude canary.yml from sync"
+
+      - name: 推送更新到 GitHub
+        run: git push origin master
